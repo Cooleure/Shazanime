@@ -1,24 +1,22 @@
 import React, { useState } from 'react';
-import { Container, Typography, Card, CardContent } from '@mui/material';
+import { Container, Typography, Card, CardContent, Button } from '@mui/material';
 import { useLocation, useNavigate } from 'react-router-dom';
+import PredictionResult from './PredictionResult';
 
-function ImageProcessing() {
+function Processing() {
   const location = useLocation();
   const navigate = useNavigate();
   const [file, setFile] = useState(null);
+  const [prediction, setPrediction] = useState(null);
 
   // Récupérer le fichier depuis l'emplacement de la route
-  const { file: locationFile } = location.state;
+  const { file: locationFile, pred: pred } = location.state;
 
   // Mettre à jour le fichier lorsqu'il est disponible dans la location
   if (locationFile && !file) {
     setFile(locationFile);
+    setPrediction(pred);
   }
-
-  const handleImageChange = (e) => {
-    const selectedFile = e.target.files[0];
-    setFile(selectedFile);
-  };
 
   const navigateToHome = () => {
     navigate('/');
@@ -26,14 +24,14 @@ function ImageProcessing() {
 
   return (
     <Container style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
-      <Typography variant="h3" align="center" style={{ marginTop: '32px' }}>Traitement de l'image...</Typography>
+      {/* <Typography variant="h3" align="center" style={{ marginTop: '32px' }}>Traitement de l'image...</Typography> */}
       {file ? (
         <Card sx={{ maxWidth: '80vw', margin: 'auto', marginTop: 4 }}>
           <CardContent>
             <img
               src={URL.createObjectURL(file)}
               alt="Image"
-              style={{ width: '100%', height: 'auto' }}
+              style={{ maxHeight: '300px', width: 'auto', height: 'auto' }}
             />
           </CardContent>
         </Card>
@@ -42,11 +40,13 @@ function ImageProcessing() {
           Aucune image sélectionnée. Veuillez sélectionner une image à traiter.
         </Typography>
       )}
-      <input type="file" accept="image/*" onChange={handleImageChange} style={{ marginTop: '16px' }} />
+      <PredictionResult prediction={prediction} />
       <br />
-      <button onClick={navigateToHome} style={{ marginTop: '16px' }}>Retour à la page d'accueil</button>
+      <Button variant="contained" onClick={navigateToHome} style={{ marginTop: '16px', marginBottom: '16px'}}>
+        Retour à la page d'accueil
+        </Button>
     </Container>
   );
 }
 
-export default ImageProcessing;
+export default Processing;

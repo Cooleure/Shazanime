@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Paper, Typography, IconButton } from '@mui/material';
+import { Paper, Typography } from '@mui/material';
 import { styled } from '@mui/system';
 import { useNavigate } from 'react-router-dom';
 import ImageIcon from '@mui/icons-material/Image';
+import axios from 'axios';
 
 const DropZoneContainer = styled(Paper)({
   position: 'fixed',
@@ -14,8 +15,8 @@ const DropZoneContainer = styled(Paper)({
   alignItems: 'center',
   justifyContent: 'center',
   zIndex: 999,
-  cursor: 'pointer', // Curseur en forme de main
-  backgroundColor: 'rgba(0, 0, 0, 0.8)', // Fond sombre
+  cursor: 'pointer',
+  backgroundColor: 'rgba(0, 0, 0, 0.8)',
 });
 
 const ContentContainer = styled('div')({
@@ -31,25 +32,42 @@ const ContentContainer = styled('div')({
 
 const Content = styled('div')({
   textAlign: 'center',
-  border: '2px dashed #aaa', // Ajout de la bordure pointillée
-  borderRadius: '20px', // Coins arrondis
-  padding: '30px', // Réduction de l'espacement intérieur
+  border: '2px dashed #aaa',
+  borderRadius: '20px',
+  padding: '30px',
 });
 
 const Title = styled(Typography)({
   position: 'absolute',
-  top: '100px', // Ajuster la marge supérieure
+  top: '100px',
   width: '100%',
   textAlign: 'center',
-  // Plus grand
   fontSize: '96px',
   fontWeight: 'bold',
-  color: '#fff', // Couleur de texte blanche
+  color: '#fff',
 });
 
 function Home() {
-  const [dragging, setDragging] = useState(false);
+  // const location = useLocation();
   const navigate = useNavigate();
+  const [dragging, setDragging] = useState(false);
+
+  const sendImageToServer = (imageFile) => {
+    // Crée un objet FormData
+    const formData = new FormData();
+    formData.append('image', imageFile);
+
+    // Envoie l'image au serveur Flask
+    axios.post('http://127.0.0.1:5000/predict', formData)
+      .then(response => {
+        const prediction = response.data;
+        console.log(prediction)
+        navigate("/processing", { state: { file: imageFile, pred: prediction } });
+      })
+      .catch(error => {
+        console.error('Erreur lors de l\'envoi de l\'image au serveur :', error);
+      });
+  };
 
   const handleDragEnter = (e) => {
     e.preventDefault();
@@ -75,7 +93,7 @@ function Home() {
     const files = e.dataTransfer.files;
     if (files.length > 0) {
       const file = files[0];
-      navigate("/processing",  { state: { file } });
+      sendImageToServer(file);
       setDragging(false);
     }
   };
@@ -86,7 +104,7 @@ function Home() {
     input.accept = 'image/*';
     input.onchange = (e) => {
       const file = e.target.files[0];
-      navigate("/processing",  { state: { file } });
+      sendImageToServer(file);
     };
     input.click();
   };
